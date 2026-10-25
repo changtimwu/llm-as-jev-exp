@@ -1,0 +1,18 @@
+{
+  "model": "mlx-community/Qwen3.5-4B-4bit",
+  "precision": "bf16",
+  "n": 300,
+  "prompt_tokens_median": 709,
+  "latency_ms_median": 2003.6402499536052,
+  "jev": {
+    "acc": 0.6733333333333333,
+    "ece": 0.08038557335734367,
+    "brier": 0.4423841203521821
+  },
+  "first_token": {
+    "acc": 0.11,
+    "ece": 0.034785121629635485,
+    "brier": 0.9333851662835986
+  },
+  "first_token_distinct_scores": 9
+}

@@ -1,0 +1,23 @@
+{
+  "model": "mlx-community/Qwen3.5-4B-4bit",
+  "precision": "fp32-activations",
+  "n": 300,
+  "prompt_tokens_median": 709,
+  "latency_ms_median": 2290.981958503835,
+  "jev": {
+    "acc": 0.6733333333333333,
+    "ece": 0.07620133837064111,
+    "brier": 0.4422912882355029
+  },
+  "first_token": {
+    "acc": 0.11,
+    "ece": 0.033565822690725326,
+    "brier": 0.9332072401886845
+  },
+  "first_token_distinct_scores": 9,
+  "text": {
+    "acc": 0.6766666666666666,
+    "parse_fail": 0,
+    "agree_with_jev": 0.98
+  }
+}

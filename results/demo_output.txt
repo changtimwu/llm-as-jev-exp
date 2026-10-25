@@ -1,0 +1,36 @@
+
+[choice] User wants to change their shipping address.   (61 prompt tok, 193 ms)
+     [ 1]   0.43%   (first-token   0.43%)  order_status
+  <- [ 2]  99.27%   (first-token  99.26%)  change_shipping
+     [ 3]   0.30%   (first-token   0.30%)  cancel_order
+
+[noul] Claim: The Eiffel Tower is in Berlin.   (69 prompt tok, 162 ms)
+     [ 1]   1.53%   (first-token   1.55%)  yes - the claim is factually correct
+  <- [ 2]  98.47%   (first-token  98.45%)  no - the claim is factually incorrect
+
+[score] Rate the politeness of: 'Give me my refund now, you idiots.'   (93 prompt tok, 197 ms)
+  <- [ 1]  93.22%   (first-token  93.16%)  1 - very rude
+     [ 2]   5.11%   (first-token   5.15%)  2 - rude
+     [ 3]   0.51%   (first-token   0.51%)  3 - neutral
+     [ 4]   0.30%   (first-token   0.31%)  4 - polite
+     [ 5]   0.86%   (first-token   0.87%)  5 - very polite
+
+[choice, none-of-the-above] Which of these is a prime number?   (72 prompt tok, 171 ms)
+     [ 1]   6.49%   (first-token   6.69%)  21
+     [ 2]   1.79%   (first-token   2.27%)  33
+     [ 3]   1.35%   (first-token   1.35%)  49
+  <- [ 4]  90.37%   (first-token  89.69%)  none of the above
+
+[choice, K=12 (option 10 is correct)] Which month has the fewest days?   (106 prompt tok, 263 ms)
+     [ 1]   1.09%   (first-token  24.81%)  January
+     [ 2]   2.18%   (first-token   0.56%)  March
+     [ 3]   0.04%   (first-token   0.01%)  April
+     [ 4]   0.05%   (first-token   0.01%)  May
+     [ 5]   0.53%   (first-token   0.14%)  June
+     [ 6]   0.10%   (first-token   0.03%)  July
+     [ 7]   0.01%   (first-token   0.00%)  August
+     [ 8]   0.01%   (first-token   0.00%)  September
+     [ 9]   0.01%   (first-token   0.00%)  October
+  <- [10]  95.81%   (first-token  24.81%)  February
+     [11]   0.03%   (first-token  24.81%)  November
+     [12]   0.14%   (first-token  24.81%)  December

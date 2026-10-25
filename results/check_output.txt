@@ -1,0 +1,2 @@
+K=  3  max|Δlogp|=0.00e+00  max|Δp|=6.11e-08  argmax 2 vs 2  cached 191 ms (2 calls) / naive 326 ms (3 calls)
+K=119  max|Δlogp|=3.81e-05  max|Δp|=1.37e-07  argmax 25 vs 25  cached 2459 ms (2 calls) / naive 347823 ms (119 calls)

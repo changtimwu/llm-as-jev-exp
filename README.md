@@ -72,4 +72,71 @@ python eval_banking77.py --n 300          # sampled 77-way eval
 
 ## Results
 
-_To be filled in after running the PoC._
+Hardware: Apple M1 Max (32 GB), mlx 0.32.4, mlx-lm 0.32.2. Raw outputs are in [`results/`](results/).
+
+### 1. Cached trie scoring is exact (`python jev.py --check`)
+
+| K | max \|Δ log p\| vs naive | argmax | cached | naive |
+|---|---|---|---|---|
+| 3 | 0 | same | 191 ms (2 forward calls) | 326 ms (3 calls) |
+| 119 | 3.8e-5 | same | 2.5 s (2 calls) | 348 s (119 calls) |
+
+One prefill plus one batched trie step reproduces the full per-candidate recomputation within 4e-5 nats,
+about **140× faster** at K=119. The paper reports agreement within 1e-5.
+
+**Precision gotcha.** With the model's native bf16 activations, the same check drifts by up to **0.15 nats**.
+bf16 logits of magnitude about 20 have a resolution of roughly 0.1, and a batched forward pass rounds
+differently from a single-row one. Casting activations to FP32 (`model.set_dtype(mx.float32)`, with the
+weights still 4-bit) fixes it at no measurable cost. FP32 is the default; `--bf16` turns it off. The paper
+also runs inference in FP32.
+
+### 2. Demo: the option-10 effect (`python demo.py`)
+
+For K ≤ 9 the first-token readout from the Gemini sketch is almost identical to full scoring. At K=12 it
+breaks. Here the correct answer is option 10:
+
+```
+[choice, K=12 (option 10 is correct)] Which month has the fewest days?
+     [ 1]   1.09%   (first-token  24.81%)  January
+  <- [10]  95.81%   (first-token  24.81%)  February
+     [11]   0.03%   (first-token  24.81%)  November
+     [12]   0.14%   (first-token  24.81%)  December
+```
+
+The first-token readout cannot tell `1]`, `10]`, `11]` and `12]` apart, because all of them start with
+the token `1`. Full output: [`results/demo_output.txt`](results/demo_output.txt).
+
+### 3. Banking77, 77-way zero-shot (n = 300, seed 0, `mteb/banking77` test)
+
+| Model | Readout | Acc | ECE (15 bins) | Brier | Paper (full test) |
+|---|---|---|---|---|---|
+| Qwen3.5-4B-4bit, FP32 act. | **full suffix (paper)** | **67.3 %** | 0.076 | 0.442 | 69.0 % |
+| | text mode (greedy) | 67.7 % (0 parse fails, 98 % agree) | – | – | 68.5 % |
+| | first token (Gemini sketch) | 11.0 % | 0.034 | 0.933 | – |
+| Qwen3.5-4B-4bit, bf16 act. | full suffix | 67.3 % | 0.080 | 0.442 | – |
+| | first token | 11.0 % | 0.035 | 0.933 | – |
+| Qwen3-0.6B-4bit, FP32 act. | **full suffix (paper)** | **21.3 %** | 0.363 | 1.089 | 22.2 % |
+| | text mode (greedy) | 21.7 % (0 parse fails, 94 % agree) | – | – | 21.9 % |
+| | first token | 8.7 % | 0.027 | 1.004 | – |
+
+Median scoring latency for a prompt of about 710 tokens: **2.3 s** for 4B FP32, 2.0 s for 4B bf16, and
+0.46 s for 0.6B. The paper reports 194 ms (4B) and 76 ms (0.6B) in FP32 on an RTX A5500. Nothing here is
+optimised for speed.
+
+**Takeaways**
+- A 4-bit MLX port reproduces the paper's training-free Banking77 numbers within sampling noise. With
+  n=300 the 95 % CI is about ±5 pts, which covers 69.0 % and 22.2 %.
+- The paper's suffix readout and greedy text mode agree on 94–98 % of items, as the paper reports
+  (generation ≈ readout). The readout also returns a full distribution for free.
+- On high-cardinality tasks the first-token readout is unusable: it only has 9 distinct scores for 77
+  options. Its low ECE is not a sign of good calibration. Its probabilities are close to uniform, so
+  confidence is low everywhere.
+- Calibration at 4B is reasonable out of the box (ECE 0.076). At 0.6B it is poor (0.363), which matches
+  the paper's finding that small models need fine-tuning.
+- bf16 vs FP32 did not change Banking77 accuracy at all. The precision gotcha matters for exact scores
+  and probabilities, not for argmax on this task.
+
+### Caveats
+- 4-bit quantized weights, not the paper's FP32 weights. A 300-item sample, not the full 3,080 items.
+  Raw label names (`card_arrival`) are used as option text in canonical label order.
+- JevBench, the fine-tuning recipe, Thinking Jev and image inputs are not reproduced.
